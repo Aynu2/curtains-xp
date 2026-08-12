@@ -58,14 +58,32 @@ export class SystemSounds {
     });
   }
 
-  // Windows XP startup sound
+  // Authentic multi-tonal Windows XP style startup sound
   playStartup() {
-    this.playSequence([
-      { freq: 523.25, duration: 0.1 }, // C5
-      { freq: 659.25, duration: 0.1 }, // E5
-      { freq: 783.99, duration: 0.1 }, // G5
-      { freq: 1046.5, duration: 0.3 }, // C6
-    ]);
+    if (!this.enabled || !this.audioContext) return;
+    try {
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
+    } catch {}
+
+    const chords = [
+      { notes: [261.63, 329.63, 392.00], duration: 0.25 }, // C4 Major
+      { notes: [329.63, 392.00, 523.25], duration: 0.25 }, // E4
+      { notes: [392.00, 493.88, 587.33, 783.99], duration: 0.35 }, // G4 Major 7th
+      { notes: [523.25, 659.25, 783.99, 1046.50], duration: 0.8 }, // C5 High Resolution Finale
+    ];
+
+    let delay = 0;
+    chords.forEach(({ notes, duration }) => {
+      setTimeout(() => {
+        if (!this.audioContext) return;
+        notes.forEach((freq) => {
+          this.play(freq, duration, 'sine');
+        });
+      }, delay * 1000);
+      delay += duration * 0.85;
+    });
   }
 
   // Button click sound

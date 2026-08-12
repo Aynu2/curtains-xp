@@ -75,20 +75,32 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     return (saved as Theme) || 'luna-blue';
   });
   const [windows, setWindows] = useState<Window[]>([]);
-  const [username, setUsername] = useState('CurtainsUser');
-  const [userPassword, setUserPassword] = useState('password');
+  const [username, setUsername] = useState(() => {
+    return localStorage.getItem('curtains-xp-username') || 'CurtainsUser';
+  });
+  const [userPassword, setUserPassword] = useState(() => {
+    return localStorage.getItem('curtains-xp-password') || 'password';
+  });
   const [bootProgress, setBootProgress] = useState(0);
   const [nextZIndex, setNextZIndex] = useState(100);
-  const [installedComponents, setInstalledComponents] = useState<SelectedComponents>({
-    fileExplorer: true,
-    calculator: true,
-    terminal: true,
-    notepad: true,
-    settings: true,
-    games: true,
-    browser: true,
-    weatherWidget: true,
-    newsReader: true,
+  const [installedComponents, setInstalledComponents] = useState<SelectedComponents>(() => {
+    const saved = localStorage.getItem('curtains-xp-installed-components');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {}
+    }
+    return {
+      fileExplorer: true,
+      calculator: true,
+      terminal: true,
+      notepad: true,
+      settings: true,
+      games: true,
+      browser: true,
+      weatherWidget: true,
+      newsReader: true,
+    };
   });
   const [clipboard, setClipboard] = useState<ClipboardItem | null>(null);
 
@@ -164,10 +176,22 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     focusWindow(id);
   }, [focusWindow]);
 
-  // Persist theme to localStorage
+  // Persist settings & user data to localStorage
   useEffect(() => {
     localStorage.setItem('curtains-xp-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('curtains-xp-username', username);
+  }, [username]);
+
+  useEffect(() => {
+    localStorage.setItem('curtains-xp-password', userPassword);
+  }, [userPassword]);
+
+  useEffect(() => {
+    localStorage.setItem('curtains-xp-installed-components', JSON.stringify(installedComponents));
+  }, [installedComponents]);
 
   const value: OSContextType = {
     screen,

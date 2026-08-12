@@ -29,6 +29,7 @@ export const CreateUserScreen: React.FC = () => {
     // Save user and proceed to turn-on screen
     setUsername(username);
     setUserPassword(password);
+    localStorage.setItem('curtains-xp-setup-complete', 'true');
     setScreen('turn-on');
   };
 

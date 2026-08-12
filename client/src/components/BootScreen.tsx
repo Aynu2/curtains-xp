@@ -18,7 +18,8 @@ export const BootScreen: React.FC = () => {
         setBootProgress(100);
         clearInterval(interval);
         setTimeout(() => {
-          setScreen('installation');
+          const isSetup = localStorage.getItem('curtains-xp-setup-complete') === 'true' || localStorage.getItem('curtains-xp-installed') === 'true';
+          setScreen(isSetup ? 'login' : 'installation');
         }, 1500);
       } else {
         setBootProgress(progress);

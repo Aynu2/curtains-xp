@@ -14,15 +14,19 @@ export const LoginScreen: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<UserAccount | null>(null);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [users, setUsers] = useState<UserAccount[]>([
-    {
-      id: '1',
-      username: contextUsername,
-      password: contextPassword,
-      avatar: '👤',
-      color: '#0099CC',
-    },
-  ]);
+  const [users, setUsers] = useState<UserAccount[]>(() => {
+    const savedUser = localStorage.getItem('curtains-xp-username') || contextUsername || 'CurtainsUser';
+    const savedPass = localStorage.getItem('curtains-xp-password') || contextPassword || 'password';
+    return [
+      {
+        id: '1',
+        username: savedUser,
+        password: savedPass,
+        avatar: '👤',
+        color: '#0099CC',
+      },
+    ];
+  });
 
   const handleLogin = () => {
     if (!selectedUser) return;

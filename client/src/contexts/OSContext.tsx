@@ -70,8 +70,8 @@ const OSContext = createContext<OSContextType | undefined>(undefined);
 
 export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [screen, setScreen] = useState<OSScreen>(() => {
-    const isInstalled = localStorage.getItem('curtains-xp-installed');
-    return isInstalled === 'true' ? 'desktop' : 'boot';
+    const isSetup = localStorage.getItem('curtains-xp-setup-complete') === 'true' || localStorage.getItem('curtains-xp-installed') === 'true';
+    return isSetup ? 'login' : 'boot';
   });
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('curtains-xp-theme');

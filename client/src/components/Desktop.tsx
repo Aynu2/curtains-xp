@@ -68,9 +68,12 @@ export const Desktop: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Load files from root folder
+    // Load files from root folder and play startup chime
     const rootFiles = getFolderContents('root');
     setDesktopFiles(rootFiles);
+
+    const sounds = getSoundInstance();
+    sounds.playStartup();
   }, []);
 
   useEffect(() => {

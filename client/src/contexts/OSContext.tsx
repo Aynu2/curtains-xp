@@ -69,7 +69,10 @@ export interface OSContextType {
 const OSContext = createContext<OSContextType | undefined>(undefined);
 
 export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [screen, setScreen] = useState<OSScreen>('boot');
+  const [screen, setScreen] = useState<OSScreen>(() => {
+    const isInstalled = localStorage.getItem('curtains-xp-installed');
+    return isInstalled === 'true' ? 'desktop' : 'boot';
+  });
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('curtains-xp-theme');
     return (saved as Theme) || 'luna-blue';

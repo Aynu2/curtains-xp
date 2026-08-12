@@ -9,6 +9,7 @@ export const TurnOnScreen: React.FC = () => {
     setLoading(true);
     // Simulate boot sequence
     setTimeout(() => {
+      localStorage.setItem('curtains-xp-installed', 'true');
       setScreen('login');
     }, 2000);
   };

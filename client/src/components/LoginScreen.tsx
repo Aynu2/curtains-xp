@@ -32,6 +32,7 @@ export const LoginScreen: React.FC = () => {
       setUsername(selectedUser.username);
       setUserPassword(selectedUser.password);
       setPassword('');
+      localStorage.setItem('curtains-xp-installed', 'true');
       setScreen('desktop');
     } else {
       setPasswordError('Incorrect password');

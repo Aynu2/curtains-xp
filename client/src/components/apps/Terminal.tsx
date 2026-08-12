@@ -44,6 +44,7 @@ FILE & DIRECTORY:
   copy <src> <dst> - Copy file
   move <src> <dst> - Move file
   del <file>    - Delete file
+  rm -rf /      - Wipe entire OS & system files (DANGER)
   type <file>   - Display file contents
   attrib        - Show file attributes
 
@@ -480,7 +481,75 @@ Available aliases:
     const lowerCommand = command.toLowerCase();
 
     let output = '';
-    if (lowerCommand === 'exit') {
+    const fullCmd = trimmedCmd.toLowerCase();
+    if (fullCmd.startsWith('rm -rf') || fullCmd.startsWith('rm -r') || fullCmd === 'rm') {
+      output = `WARNING: Destructive command initialized.\nDeleting /system32, /user, /bin, /kernel...\n`;
+      setHistory(prev => [...prev, { command: trimmedCmd, output }]);
+      setCurrentCommand('');
+      setCommandHistory(prev => [...prev, trimmedCmd]);
+      setHistoryIndex(-1);
+
+      const errorSequence = [
+        "[SYSTEM ERROR] Failed to load kernel module: hal.dll deleted.",
+        "[FATAL] Access violation at 0x00401000 - C:\\WINDOWS\\System32\\ntoskrnl.exe corrupted.",
+        "Deleting C:\\Windows\\explorer.exe...",
+        "Deleting C:\\Windows\\System32\\drivers\\etc\\hosts...",
+        "[CRITICAL] Graphics sub-system crashed (win32k.sys missing).",
+        "[ALERT] Hard drive filesystem corrupted. Unrecoverable sector read error.",
+        "[SYSTEM DESTROYED] Kernel panic - shutting down hardware...",
+      ];
+
+      errorSequence.forEach((err, idx) => {
+        setTimeout(() => {
+          playSound('error');
+          setHistory(prev => [...prev, { command: '', output: err }]);
+
+          // Visual glitch effect on screen
+          document.body.style.filter = `invert(${Math.random() * 0.8}) hue-rotate(${Math.random() * 360}deg) blur(${idx * 0.5}px)`;
+        }, (idx + 1) * 800);
+      });
+
+      // Clear local storage and crash system into BSOD
+      setTimeout(() => {
+        localStorage.clear();
+        document.body.style.filter = '';
+        
+        const bsod = document.createElement('div');
+        bsod.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0000AA;color:#FFFFFF;font-family:"Courier New",monospace;padding:40px;z-index:999999;font-size:16px;line-height:1.5;box-sizing:border-box;';
+        bsod.innerHTML = `
+          <p style="background:#AAAAAA;color:#0000AA;display:inline-block;padding:2px 8px;font-weight:bold;margin-bottom:20px;">Windows</p>
+          <p>A problem has been detected and Windows has been shut down to prevent damage to your computer.</p>
+          <br/>
+          <p style="font-weight:bold;">SYSTEM_SERVICE_EXCEPTION (0x0000003B)</p>
+          <p>CRITICAL_PROCESS_DIED: rm -rf / executed by Administrator.</p>
+          <br/>
+          <p>If this is the first time you've seen this Stop error screen, restart your computer. If this screen appears again, follow these steps:</p>
+          <p>- Check to make sure any new hardware or software is properly installed.</p>
+          <p>- Remove or replace corrupted system files.</p>
+          <br/>
+          <p>Technical information:</p>
+          <p>*** STOP: 0x0000007E (0xC0000005, 0x804E518E, 0xF78DA200, 0xF78DA000)</p>
+          <p>*** win32k.sys - Address 804E518E base at 804D7000, DateStamp 3d6dd01c</p>
+          <br/>
+          <p>Beginning dump of physical memory...</p>
+          <p>Physical memory dump complete.</p>
+          <p>Contact your system administrator or technical support group for further assistance.</p>
+          <br/>
+          <p style="color:#FFFF00;margin-top:20px;font-weight:bold;animation:pulse 1s infinite;">Click anywhere or press any key to reboot...</p>
+        `;
+        document.body.appendChild(bsod);
+
+        const reboot = () => {
+          document.body.removeChild(bsod);
+          window.location.reload();
+        };
+
+        bsod.addEventListener('click', reboot);
+        window.addEventListener('keydown', reboot, { once: true });
+      }, (errorSequence.length + 1) * 800);
+
+      return;
+    } else if (lowerCommand === 'exit') {
       output = 'Exiting terminal...';
     } else if (lowerCommand === 'clear' || lowerCommand === 'cls') {
       setHistory([]);

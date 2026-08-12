@@ -1,0 +1,558 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* Windows XP Color Palette - Authentic Retro */
+  --xp-teal: #0099CC;
+  --xp-teal-dark: #0066AA;
+  --xp-green: #008000;
+  --xp-green-light: #00AA00;
+  --xp-silver: #C0C0C0;
+  --xp-silver-light: #DFDFDF;
+  --xp-silver-dark: #808080;
+  --xp-white: #FFFFFF;
+  --xp-black: #000000;
+  --xp-gray: #808080;
+  --xp-light-gray: #F0F0F0;
+  
+  --primary: var(--xp-teal);
+  --primary-foreground: var(--xp-white);
+  --sidebar-primary: var(--xp-teal);
+  --sidebar-primary-foreground: var(--xp-white);
+  --chart-1: var(--xp-teal);
+  --chart-2: var(--xp-green);
+  --chart-3: var(--xp-silver);
+  --chart-4: var(--xp-teal-dark);
+  --chart-5: var(--xp-green-light);
+  --radius: 0;
+  --background: var(--xp-light-gray);
+  --foreground: var(--xp-black);
+  --card: var(--xp-silver-light);
+  --card-foreground: var(--xp-black);
+  --popover: var(--xp-silver-light);
+  --popover-foreground: var(--xp-black);
+  --secondary: var(--xp-silver);
+  --secondary-foreground: var(--xp-black);
+  --muted: var(--xp-silver);
+  --muted-foreground: var(--xp-gray);
+  --accent: var(--xp-teal);
+  --accent-foreground: var(--xp-white);
+  --destructive: #FF0000;
+  --destructive-foreground: var(--xp-white);
+  --border: var(--xp-silver-dark);
+  --input: var(--xp-white);
+  --ring: var(--xp-teal);
+  --sidebar: var(--xp-silver-light);
+  --sidebar-foreground: var(--xp-black);
+  --sidebar-accent: var(--xp-teal);
+  --sidebar-accent-foreground: var(--xp-white);
+  --sidebar-border: var(--xp-silver-dark);
+  --sidebar-ring: var(--xp-teal);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Tahoma", "MS Sans Serif", "Segoe UI", sans-serif;
+    font-size: 11px;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+/* Custom container utility */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.flex {
+  min-height: 0;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+    max-width: 1280px;
+  }
+}
+
+/* Windows XP Beveled Button Style */
+.xp-button {
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  font-size: 12px;
+  background: linear-gradient(135deg, #DFDFDF 0%, #808080 100%);
+  border: 2px solid;
+  border-color: #FFFFFF #808080 #808080 #FFFFFF;
+  color: #000000;
+  cursor: pointer;
+  user-select: none;
+  transition: all 80ms ease-out;
+}
+
+.xp-button:active {
+  border-color: #808080 #FFFFFF #FFFFFF #808080;
+  background: linear-gradient(135deg, #808080 0%, #DFDFDF 100%);
+}
+
+.xp-button:hover:not(:active) {
+  background: linear-gradient(135deg, #EFEFEF 0%, #909090 100%);
+}
+
+/* Windows XP Window Style */
+.xp-window {
+  background-color: #DFDFDF;
+  border: 2px solid;
+  border-color: #DFDFDF #808080 #808080 #DFDFDF;
+  box-shadow: inset 1px 1px 0 #FFFFFF, inset -1px -1px 0 #808080;
+}
+
+/* Windows XP Title Bar */
+.xp-titlebar {
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #0099CC 0%, #0066AA 100%);
+  color: #FFFFFF;
+  font-weight: bold;
+  font-size: 11px;
+  user-select: none;
+}
+
+/* Windows XP Window Controls */
+.xp-window-control {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #DFDFDF 0%, #808080 100%);
+  border: 2px solid;
+  border-color: #FFFFFF #808080 #808080 #FFFFFF;
+  color: #000000;
+  cursor: pointer;
+  user-select: none;
+  transition: all 80ms ease-out;
+}
+
+.xp-window-control:active {
+  border-color: #808080 #FFFFFF #FFFFFF #808080;
+  background: linear-gradient(135deg, #808080 0%, #DFDFDF 100%);
+}
+
+/* Windows XP Taskbar */
+.xp-taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  background: linear-gradient(180deg, #DFDFDF 0%, #C0C0C0 100%);
+  border-top: 2px solid;
+  border-color: #DFDFDF #808080 #808080 #DFDFDF;
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+  gap: 2px;
+  z-index: 1000;
+  color: #000000;
+}
+
+/* Windows XP Start Button */
+.xp-start-button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.5rem;
+  padding: 0 0.75rem;
+  background: linear-gradient(135deg, #DFDFDF 0%, #808080 100%);
+  border: 2px solid;
+  border-color: #FFFFFF #808080 #808080 #FFFFFF;
+  color: #000000;
+  font-weight: bold;
+  font-size: 11px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 80ms ease-out;
+}
+
+.xp-start-button:active {
+  border-color: #808080 #FFFFFF #FFFFFF #808080;
+  background: linear-gradient(135deg, #808080 0%, #DFDFDF 100%);
+}
+
+/* Windows XP Desktop Icon */
+.xp-desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 100ms ease-out;
+}
+
+.xp-desktop-icon:hover {
+  background: rgba(0, 153, 204, 0.3);
+  border: 1px dotted #0099CC;
+}
+
+.xp-desktop-icon-label {
+  font-size: 12px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  max-width: 60px;
+  word-break: break-word;
+}
+
+/* Progress Bar XP Style */
+.xp-progress {
+  height: 1rem;
+  background-color: #DFDFDF;
+  border: 2px solid;
+  border-color: #FFFFFF #808080 #808080 #FFFFFF;
+}
+
+.xp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0099CC 0%, #0066AA 100%);
+  transition: width 100ms ease-out;
+}
+
+/* Input Field XP Style */
+.xp-input {
+  padding: 0.25rem 0.5rem;
+  border: 2px solid;
+  border-color: #808080 #FFFFFF #FFFFFF #808080;
+  background-color: white;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  font-size: 11px;
+}
+
+.xp-input:focus {
+  outline: none;
+  border-color: #0099CC #0099CC #0099CC #0099CC;
+}
+
+/* Scrollbar XP Style */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(90deg, #DFDFDF 0%, #C0C0C0 100%);
+  border: 1px solid;
+  border-color: #DFDFDF #808080 #808080 #DFDFDF;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #DFDFDF 0%, #808080 100%);
+  border: 2px solid;
+  border-color: #DFDFDF #808080 #808080 #DFDFDF;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #EFEFEF 0%, #909090 100%);
+}
+
+::-webkit-scrollbar-corner {
+  background: #C0C0C0;
+}
+
+
+/* Window Animations */
+@keyframes windowSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes windowSlideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+}
+
+@keyframes minimizeWindow {
+  0% {
+    opacity: 1;
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.1) translate(-80%, 400%);
+  }
+}
+
+@keyframes restoreWindow {
+  0% {
+    opacity: 0;
+    transform: scale(0.1) translate(-80%, 400%);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+@keyframes maximizeWindow {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes unmaximizeWindow {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Desktop Icon Animations */
+@keyframes desktopIconHover {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes desktopIconClick {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Button Press Animation */
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide Down Animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation Utility Classes */
+.animate-window-slide-in {
+  animation: windowSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-window-slide-out {
+  animation: windowSlideOut 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-minimize {
+  animation: minimizeWindow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.animate-restore {
+  animation: restoreWindow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.animate-maximize {
+  animation: maximizeWindow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-unmaximize {
+  animation: unmaximizeWindow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-desktop-icon-hover {
+  animation: desktopIconHover 0.2s ease-in-out;
+}
+
+.animate-button-press {
+  animation: buttonPress 0.15s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* CRT Scanlines Effect (Optional) */
+.crt-effect {
+  position: relative;
+}
+
+.crt-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.03),
+    rgba(0, 0, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Smooth transitions for interactive elements */
+.xp-button,
+.xp-window-control,
+.xp-start-button,
+.xp-desktop-icon {
+  transition: all 80ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Hover effects */
+.xp-button:hover:not(:active),
+.xp-window-control:hover:not(:active),
+.xp-start-button:hover:not(:active) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Active/pressed effects */
+.xp-button:active,
+.xp-window-control:active,
+.xp-start-button:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}

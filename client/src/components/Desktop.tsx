@@ -90,7 +90,6 @@ export const Desktop: React.FC = () => {
 
   const desktopApps = [
     { id: 'my-computer', label: 'My Computer', icon: '💻' },
-    { id: 'documents', label: 'My Documents', icon: '📁' },
     installedComponents.fileExplorer && { id: 'file-explorer', label: 'File Explorer', icon: '📂' },
     installedComponents.calculator && { id: 'calculator', label: 'Calculator', icon: '🧮' },
     installedComponents.terminal && { id: 'terminal', label: 'Terminal', icon: '⌨️' },
@@ -99,6 +98,8 @@ export const Desktop: React.FC = () => {
     installedComponents.browser && { id: 'browser', label: 'Browser', icon: '🌐' },
     installedComponents.settings && { id: 'settings', label: 'Settings', icon: '⚙️' },
     { id: 'recycle', label: 'Recycle Bin', icon: '🗑️' },
+    { id: 'restart', label: 'Restart', icon: '🔄' },
+    { id: 'shutdown', label: 'Shut Down', icon: '⏻' },
   ].filter(Boolean);
 
   const handleDesktopIconClick = (appId: string) => {
@@ -140,6 +141,12 @@ export const Desktop: React.FC = () => {
         break;
       case 'settings':
         openWindow('settings', 'Settings');
+        break;
+      case 'restart':
+        handleRestart();
+        break;
+      case 'shutdown':
+        handleShutdown();
         break;
       default:
         break;

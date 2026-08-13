@@ -195,6 +195,22 @@ export const InstallationWizard: React.FC<InstallationWizardProps> = ({ onInstal
             <div className="space-y-4">
               <h2 className="font-bold text-sm mb-4">Select Installation Folder</h2>
               <p className="text-xs mb-2">Choose where to install Curtains XP:</p>
+
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={() => setDestinationFolder('C:\\Program Files\\Curtains XP')}
+                  className={`xp-button text-xs px-3 py-1 ${destinationFolder.startsWith('C:') ? 'ring-2 ring-blue-500' : ''}`}
+                >
+                  💾 C: Drive
+                </button>
+                <button
+                  onClick={() => setDestinationFolder('E:\\Program Files\\Curtains XP')}
+                  className={`xp-button text-xs px-3 py-1 ${destinationFolder.startsWith('E:') ? 'ring-2 ring-blue-500' : ''}`}
+                >
+                  💿 E: Drive
+                </button>
+              </div>
+
               <div className="flex gap-2 mb-4">
                 <input
                   type="text"
@@ -207,7 +223,8 @@ export const InstallationWizard: React.FC<InstallationWizardProps> = ({ onInstal
               <div className="border-2 border-gray-400 p-2 bg-white text-xs">
                 <p className="font-bold mb-1">Installation Information:</p>
                 <p>Space required: ~50 MB</p>
-                <p>Available space: ~500 GB</p>
+                <p>Available space: {destinationFolder.startsWith('E:') ? '~2 TB' : '~500 GB'}</p>
+                <p className="mt-1 text-gray-600">Drive: {destinationFolder.startsWith('E:') ? 'E: (Secondary)' : 'C: (System)'}</p>
               </div>
             </div>
           )}

@@ -34,7 +34,7 @@ export const Desktop: React.FC = () => {
   const { windows, openWindow, username, setScreen, installedComponents, clipboard, setClipboard, theme } = useOS();
   const { playSound } = useSoundEffect();
   const themeColors = getTheme(theme);
-  const [showStartMenu, setShowStartMenu] = useState(false);
+
   const [time, setTime] = useState(new Date());
   const [dragOver, setDragOver] = useState(false);
   const [desktopFiles, setDesktopFiles] = useState<any[]>([]);
@@ -90,17 +90,8 @@ export const Desktop: React.FC = () => {
 
   const desktopApps = [
     { id: 'my-computer', label: 'My Computer', icon: '💻' },
-    installedComponents.fileExplorer && { id: 'file-explorer', label: 'File Explorer', icon: '📂' },
-    installedComponents.calculator && { id: 'calculator', label: 'Calculator', icon: '🧮' },
-    installedComponents.terminal && { id: 'terminal', label: 'Terminal', icon: '⌨️' },
-    installedComponents.notepad && { id: 'notepad', label: 'Notepad', icon: '📝' },
-    installedComponents.games && { id: 'games', label: 'Games', icon: '🎮' },
-    installedComponents.browser && { id: 'browser', label: 'Browser', icon: '🌐' },
-    installedComponents.settings && { id: 'settings', label: 'Settings', icon: '⚙️' },
     { id: 'recycle', label: 'Recycle Bin', icon: '🗑️' },
-    { id: 'restart', label: 'Restart', icon: '🔄' },
-    { id: 'shutdown', label: 'Shut Down', icon: '⏻' },
-  ].filter(Boolean);
+  ];
 
   const handleDesktopIconClick = (appId: string) => {
     playSound('click');
@@ -315,8 +306,8 @@ export const Desktop: React.FC = () => {
           <div className="text-white text-2xl font-bold">Drop files here</div>
         </div>
       )}
-      {/* Desktop Icons */}
-      <div className="p-4 grid grid-cols-3 gap-6 w-fit max-w-2xl">
+      {/* Desktop Icons — left column, like real XP */}
+      <div className="p-4 flex flex-col gap-4 w-28 absolute top-0 left-0">
         {desktopApps.map((app: any) => (
           <button
             key={app.id}
@@ -355,177 +346,7 @@ export const Desktop: React.FC = () => {
       {/* Taskbar */}
       <Taskbar onLogout={handleLogout} onRestart={handleRestart} onShutdown={handleShutdown} onAppLaunch={(app) => openWindow(app, app.replace('-', ' ').split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '))} />
 
-      {/* Start Menu */}
-      {showStartMenu && (
-        <div className="fixed bottom-10 left-0 w-64 text-white rounded-tr-lg shadow-2xl z-50 overflow-hidden" style={{
-          background: `linear-gradient(to right, ${themeColors.activeButtonGradientStart}, ${themeColors.activeButtonGradientEnd})`,
-        }}>
-          <div className="p-4 border-b border-blue-400">
-            <div className="text-sm font-bold">{username}</div>
-          </div>
-          <div className="p-2 space-y-1 max-h-96 overflow-y-auto">
-            {/* Programs */}
-            <div className="text-xs font-bold text-blue-200 px-2 py-1">Programs</div>
-            {installedComponents.notepad && (
-              <button
-                onClick={() => {
-                  openWindow('notepad', 'Notepad');
-                  setShowStartMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-              >
-                📝 Notepad
-              </button>
-            )}
-            {installedComponents.calculator && (
-              <button
-                onClick={() => {
-                  openWindow('calculator', 'Calculator');
-                  setShowStartMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-              >
-                🧮 Calculator
-              </button>
-            )}
-            {installedComponents.terminal && (
-              <button
-                onClick={() => {
-                  openWindow('terminal', 'Terminal');
-                  setShowStartMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-              >
-                ⌨️ Terminal
-              </button>
-            )}
-            {installedComponents.browser && (
-              <button
-                onClick={() => {
-                  openWindow('browser', 'Internet Browser');
-                  setShowStartMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-              >
-                🌐 Browser
-              </button>
-            )}
-            {installedComponents.games && (
-              <button
-                onClick={() => {
-                  openWindow('games', 'Games');
-                  setShowStartMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-              >
-                🎮 Games
-              </button>
-            )}
-            <button
-              onClick={() => {
-                openWindow('file-explorer', 'File Explorer');
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-            >
-              📂 File Explorer
-            </button>
-            <button
-              onClick={() => {
-                openWindow('app-store', 'App Store');
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-            >
-              🛍️ App Store
-            </button>
-            <button
-              onClick={() => {
-                openWindow('download-manager', 'Download Manager');
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-            >
-              📥 Download Manager
-            </button>
-            <button
-              onClick={() => {
-                openWindow('file-search', 'File Search');
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-            >
-              🔍 File Search
-            </button>
-            <button
-              onClick={() => {
-                openWindow('backup-restore', 'Backup & Restore');
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-            >
-              💾 Backup & Restore
-            </button>
-            <button
-              onClick={() => {
-                openWindow('email-client', 'Email');
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-            >
-              ✉️ Email
-            </button>
-            <button
-              onClick={() => {
-                openWindow('system-info', 'System Information');
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-            >
-              ℹ️ System Info
-            </button>
-            {installedComponents.settings && (
-              <button
-                onClick={() => {
-                  openWindow('settings', 'Settings');
-                  setShowStartMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-blue-600 text-sm"
-              >
-                ⚙️ Settings
-              </button>
-            )}
-            <div className="border-t border-blue-400 my-2"></div>
-            <button
-              onClick={() => {
-                handleLogout();
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-red-600 text-sm"
-            >
-              🚪 Logout
-            </button>
-            <button
-              onClick={() => {
-                handleRestart();
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-yellow-600 text-sm"
-            >
-              🔄 Restart
-            </button>
-            <button
-              onClick={() => {
-                handleShutdown();
-                setShowStartMenu(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-red-700 text-sm"
-            >
-              ⏻️ Shutdown
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* Context Menu */}
       {ContextMenuComponent}

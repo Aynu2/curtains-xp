@@ -148,37 +148,26 @@ export const BootScreen: React.FC = () => {
             </svg>
           </div>
 
-          {/* Typography: Microsoft Curtains xp */}
-          <div className="flex flex-col items-start select-none">
+          {/* Typography: Curtains xp */}
+          <div className="flex items-start leading-none select-none">
             <span
-              className="text-[#FFFFFF] text-[15px] font-medium tracking-[0.04em] leading-none mb-1 pl-1"
+              className="text-[#FFFFFF] text-[52px] font-bold tracking-[-0.03em] leading-none"
               style={{
-                fontFamily: '"Segoe UI", "Tahoma", "Arial", sans-serif',
-                textShadow: '0 2px 4px rgba(0, 0, 0, 0.9)',
+                fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+                textShadow: '0 2px 6px rgba(0, 0, 0, 0.9)',
               }}
             >
-              Microsoft
+              Curtains
             </span>
-            <div className="flex items-start leading-none">
-              <span
-                className="text-[#FFFFFF] text-[52px] font-bold tracking-[-0.03em] leading-none"
-                style={{
-                  fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
-                  textShadow: '0 2px 6px rgba(0, 0, 0, 0.9)',
-                }}
-              >
-                Curtains
-              </span>
-              <span
-                className="text-[#FF5218] text-[24px] font-black italic tracking-normal ml-1 -mt-1 select-none"
-                style={{
-                  fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
-                  textShadow: '0 1px 4px rgba(255, 82, 24, 0.4)',
-                }}
-              >
-                xp
-              </span>
-            </div>
+            <span
+              className="text-[#FF5218] text-[24px] font-black italic tracking-normal ml-1 -mt-1 select-none"
+              style={{
+                fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+                textShadow: '0 1px 4px rgba(255, 82, 24, 0.4)',
+              }}
+            >
+              xp
+            </span>
           </div>
         </div>
 

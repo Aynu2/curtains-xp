@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-
-type InstallationStep = 'welcome' | 'license' | 'destination' | 'components' | 'settings' | 'network' | 'progress' | 'completion';
+import React, { useState, useEffect } from 'react';
+import { useOS } from '@/contexts/OSContext';
+import { IconXPLogo, IconHelp } from './XPIcons';
 
 interface SelectedComponents {
   fileExplorer: boolean;
@@ -18,10 +18,12 @@ interface InstallationWizardProps {
   onInstallationComplete: (components: SelectedComponents) => void;
 }
 
+type WizardStage = 'menu' | 'components-dialog' | 'compatibility-dialog' | 'installing' | 'welcome-oobe' | 'user-setup' | 'oobe-complete';
+
 export const InstallationWizard: React.FC<InstallationWizardProps> = ({ onInstallationComplete }) => {
-  const [currentStep, setCurrentStep] = useState<InstallationStep>('welcome');
-  const [licenseAccepted, setLicenseAccepted] = useState(false);
-  const [destinationFolder, setDestinationFolder] = useState('C:\\Program Files\\Curtains XP');
+  const { setUsername, setUserPassword } = useOS();
+  const [stage, setStage] = useState<WizardStage>('menu');
+
   const [selectedComponents, setSelectedComponents] = useState<SelectedComponents>({
     fileExplorer: true,
     calculator: true,
@@ -33,444 +35,818 @@ export const InstallationWizard: React.FC<InstallationWizardProps> = ({ onInstal
     weatherWidget: true,
     newsReader: true,
   });
-  const [installationProgress, setInstallationProgress] = useState(0);
-  const [installationMessage, setInstallationMessage] = useState('Initializing installation...');
-  const [setupSettings, setSetupSettings] = useState({
-    theme: 'luna-blue',
-    resolution: '1024 x 768',
-    enableSound: true,
-    autoUpdate: true,
-  });
-  const [networkSettings, setNetworkSettings] = useState({
-    connectionType: 'ethernet',
-    ipAddress: '192.168.1.100',
-    autoDetect: true,
-  });
 
-  const handleLicenseAccept = () => {
-    setLicenseAccepted(true);
-    setCurrentStep('destination');
-  };
+  const [inputUsername, setInputUsername] = useState('Administrator');
+  const [inputPassword, setInputPassword] = useState('');
+  const [installProgress, setInstallProgress] = useState(0);
+  const [installStepIndex, setInstallStepIndex] = useState(3); // 3 = Installing Curtains
+  const [minutesRemaining, setMinutesRemaining] = useState(36);
+  const [installStatusText, setInstallStatusText] = useState('Installing Devices');
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [blinkDot, setBlinkDot] = useState(0);
 
-  const handleDestinationNext = () => {
-    setCurrentStep('components');
-  };
+  const showcaseSlides = [
+    {
+      title: 'Your computer will be faster and more reliable',
+      body: 'Curtains® XP not only starts faster than any previous version, but it also runs your programs more quickly and reliably than ever. If a program becomes unstable, you can close it without having to shut down Curtains or lose any of your work.',
+    },
+    {
+      title: 'An exciting new look and feel',
+      body: 'Curtains® XP has a fresh, streamlined design that puts the most common tasks within easy reach. Cleaner visual style, simplified menus, and customizable themes make computing easier and more enjoyable.',
+    },
+    {
+      title: 'The best experience for music, photos, and video',
+      body: 'Curtains® XP makes it easy to organize, play, and share your favorite media. Enjoy digital music with Media Player, edit and view images with Picture Viewer, and create rich documents effortlessly.',
+    },
+    {
+      title: 'Connected and secure computing',
+      body: 'Built-in internet browsing, email communication, and local network sharing make collaborating easier. Enhanced security and system restore protect your personal files and computer configuration.',
+    },
+  ];
 
-  const handleComponentToggle = (component: keyof SelectedComponents) => {
-    setSelectedComponents(prev => ({
+  // Blinking green activity dots in bottom right
+  useEffect(() => {
+    const dotInterval = setInterval(() => {
+      setBlinkDot((prev) => (prev + 1) % 4);
+    }, 450);
+    return () => clearInterval(dotInterval);
+  }, []);
+
+  // Slide rotator during installation
+  useEffect(() => {
+    if (stage === 'installing') {
+      const slideInterval = setInterval(() => {
+        setActiveSlide((prev) => (prev + 1) % showcaseSlides.length);
+      }, 7000);
+      return () => clearInterval(slideInterval);
+    }
+  }, [stage, showcaseSlides.length]);
+
+  // Installation simulation progress
+  useEffect(() => {
+    if (stage === 'installing') {
+      const statuses = [
+        'Preparing setup files...',
+        'Installing Devices',
+        'Configuring Network Settings',
+        'Installing Curtains Components',
+        'Registering Applications',
+        'Saving System Configuration',
+        'Finalizing Installation',
+      ];
+
+      const interval = setInterval(() => {
+        setInstallProgress((prev) => {
+          const next = prev + 1.2;
+          const statusIdx = Math.min(Math.floor((next / 100) * statuses.length), statuses.length - 1);
+          setInstallStatusText(statuses[statusIdx]);
+
+          if (next >= 60 && installStepIndex < 4) {
+            setInstallStepIndex(4); // Finalizing
+          }
+
+          const mins = Math.max(1, Math.round(36 - (next / 100) * 35));
+          setMinutesRemaining(mins);
+
+          if (next >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              setStage('welcome-oobe');
+            }, 800);
+            return 100;
+          }
+          return next;
+        });
+      }, 150);
+
+      return () => clearInterval(interval);
+    }
+  }, [stage, installStepIndex]);
+
+  const handleComponentToggle = (key: keyof SelectedComponents) => {
+    setSelectedComponents((prev) => ({
       ...prev,
-      [component]: !prev[component]
+      [key]: !prev[key],
     }));
   };
 
-  const handleComponentsNext = () => {
-    setCurrentStep('settings');
+  const handleStartInstallation = () => {
+    setInstallProgress(0);
+    setInstallStepIndex(3);
+    setMinutesRemaining(36);
+    setStage('installing');
   };
 
-  const handleSettingsNext = () => {
-    setCurrentStep('network');
-  };
+  const handleFinishOOBE = () => {
+    const user = inputUsername.trim() || 'Administrator';
+    setUsername(user);
+    if (inputPassword) setUserPassword(inputPassword);
 
-  const handleNetworkNext = () => {
-    setCurrentStep('progress');
-    simulateInstallation();
-  };
+    localStorage.setItem('curtains-xp-username', user);
+    if (inputPassword) localStorage.setItem('curtains-xp-password', inputPassword);
+    localStorage.setItem('curtains-xp-setup-complete', 'true');
+    localStorage.setItem('curtains-xp-installed', 'true');
 
-  const simulateInstallation = () => {
-    const messages = [
-      'Extracting files...',
-      'Copying system files...',
-      'Installing components...',
-      'Configuring settings...',
-      'Registering applications...',
-      'Creating shortcuts...',
-      'Finalizing installation...',
-      'Installation complete!',
-    ];
-
-    let progress = 0;
-    let messageIndex = 0;
-
-    const interval = setInterval(() => {
-      progress += Math.random() * 12;
-      const newMessageIndex = Math.floor((progress / 100) * messages.length);
-      
-      if (newMessageIndex > messageIndex && newMessageIndex < messages.length) {
-        messageIndex = newMessageIndex;
-        setInstallationMessage(messages[messageIndex]);
-      }
-
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-        setTimeout(() => {
-          setInstallationProgress(100);
-          setInstallationMessage('Installation complete!');
-          setCurrentStep('completion');
-        }, 500);
-      } else {
-        setInstallationProgress(Math.floor(progress));
-      }
-    }, 300);
-  };
-
-  const handleFinish = () => {
     onInstallationComplete(selectedComponents);
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="xp-window w-full max-w-2xl max-h-96 flex flex-col">
-        {/* Title Bar */}
-        <div className="xp-titlebar">
-          <span>Curtains XP Setup Wizard</span>
-          <button className="xp-window-control text-xs">×</button>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-auto p-6 bg-[background-color:#DFDFDF]">
-          {currentStep === 'welcome' && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-sm mb-4">Welcome to Curtains XP Setup</h2>
-              <div className="border-2 border-gray-400 p-4 bg-white">
-                <p className="text-xs mb-3">
-                  Welcome to the Curtains XP Setup Wizard. This wizard will guide you through the installation process.
-                </p>
-                <p className="text-xs mb-3">
-                  The setup wizard will help you:
-                </p>
-                <ul className="text-xs ml-4 space-y-1 mb-3">
-                  <li>• Review the End User License Agreement</li>
-                  <li>• Select an installation folder</li>
-                  <li>• Choose components to install</li>
-                  <li>• Configure system settings</li>
-                  <li>• Set up network connection</li>
-                  <li>• Complete the installation</li>
-                </ul>
-                <p className="text-xs text-gray-600">
-                  Click "Next" to continue.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 'license' && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-sm mb-4">License Agreement</h2>
-              <div className="border-2 border-gray-400 p-3 h-40 overflow-y-auto bg-white text-xs">
-                <p className="mb-2 font-bold">CURTAINS XP - END USER LICENSE AGREEMENT</p>
-                <p className="mb-2">
-                  This software is provided "as-is" for entertainment and educational purposes. 
-                  By installing Curtains XP, you agree to the following terms:
-                </p>
-                <p className="mb-2">
-                  1. This software may be freely used and modified for personal use.
-                </p>
-                <p className="mb-2">
-                  2. The software is provided without warranty of any kind.
-                </p>
-                <p className="mb-2">
-                  3. The creators are not liable for any issues arising from use of this software.
-                </p>
-                <p className="mb-2">
-                  4. This is a tribute to Windows XP and is not affiliated with Microsoft Corporation.
-                </p>
-                <p>
-                  By clicking "I Agree", you accept these terms and conditions.
-                </p>
-              </div>
-              <label className="flex items-center gap-2 text-xs">
-                <input
-                  type="checkbox"
-                  checked={licenseAccepted}
-                  onChange={(e) => setLicenseAccepted(e.target.checked)}
-                  className="cursor-pointer"
-                />
-                I agree to the License Agreement
-              </label>
-            </div>
-          )}
-
-          {currentStep === 'destination' && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-sm mb-4">Select Installation Folder</h2>
-              <p className="text-xs mb-2">Choose where to install Curtains XP:</p>
-
-              <div className="flex gap-2 mb-3">
-                <button
-                  onClick={() => setDestinationFolder('C:\\Program Files\\Curtains XP')}
-                  className={`xp-button text-xs px-3 py-1 ${destinationFolder.startsWith('C:') ? 'ring-2 ring-blue-500' : ''}`}
-                >
-                  💾 C: Drive
-                </button>
-                <button
-                  onClick={() => setDestinationFolder('E:\\Program Files\\Curtains XP')}
-                  className={`xp-button text-xs px-3 py-1 ${destinationFolder.startsWith('E:') ? 'ring-2 ring-blue-500' : ''}`}
-                >
-                  💿 E: Drive
-                </button>
-              </div>
-
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={destinationFolder}
-                  onChange={(e) => setDestinationFolder(e.target.value)}
-                  className="xp-input flex-1 text-xs"
-                />
-                <button className="xp-button text-xs">Browse...</button>
-              </div>
-              <div className="border-2 border-gray-400 p-2 bg-white text-xs">
-                <p className="font-bold mb-1">Installation Information:</p>
-                <p>Space required: ~50 MB</p>
-                <p>Available space: {destinationFolder.startsWith('E:') ? '~2 TB' : '~500 GB'}</p>
-                <p className="mt-1 text-gray-600">Drive: {destinationFolder.startsWith('E:') ? 'E: (Secondary)' : 'C: (System)'}</p>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 'components' && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-sm mb-4">Select Components</h2>
-              <p className="text-xs mb-3">Choose which components to install:</p>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {[
-                  { key: 'fileExplorer', label: 'File Explorer', desc: 'Browse files and folders' },
-                  { key: 'calculator', label: 'Calculator', desc: 'Basic calculator application' },
-                  { key: 'terminal', label: 'Terminal', desc: 'Command-line interface' },
-                  { key: 'notepad', label: 'Notepad', desc: 'Text editor' },
-                  { key: 'settings', label: 'Settings', desc: 'System configuration' },
-                  { key: 'games', label: 'Games', desc: 'Snake, Minesweeper, Tic Tac Toe' },
-                  { key: 'browser', label: 'Internet Browser', desc: 'Web browsing with Google search' },
-                  { key: 'weatherWidget', label: 'Weather Widget', desc: 'Real-time weather data' },
-                  { key: 'newsReader', label: 'News Reader', desc: 'Latest news feeds' },
-                ].map(({ key, label, desc }) => (
-                  <label key={key} className="flex items-start gap-2 text-xs p-2 hover:bg-blue-100">
-                    <input
-                      type="checkbox"
-                      checked={selectedComponents[key as keyof SelectedComponents]}
-                      onChange={() => handleComponentToggle(key as keyof SelectedComponents)}
-                      className="cursor-pointer mt-0.5"
-                    />
-                    <div>
-                      <div className="font-bold">{label}</div>
-                      <div className="text-gray-600">{desc}</div>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {currentStep === 'settings' && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-sm mb-4">System Settings</h2>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-bold">Theme:</label>
-                  <select 
-                    value={setupSettings.theme}
-                    onChange={(e) => setSetupSettings({...setupSettings, theme: e.target.value})}
-                    className="xp-input w-full text-xs mt-1"
-                  >
-                    <option value="luna-blue">Luna Blue</option>
-                    <option value="luna-silver">Luna Silver</option>
-                    <option value="royale">Royale</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold">Resolution:</label>
-                  <select 
-                    value={setupSettings.resolution}
-                    onChange={(e) => setSetupSettings({...setupSettings, resolution: e.target.value})}
-                    className="xp-input w-full text-xs mt-1"
-                  >
-                    <option value="800 x 600">800 x 600</option>
-                    <option value="1024 x 768">1024 x 768</option>
-                    <option value="1280 x 1024">1280 x 1024</option>
-                  </select>
-                </div>
-                <label className="flex items-center gap-2 text-xs">
-                  <input 
-                    type="checkbox" 
-                    checked={setupSettings.enableSound}
-                    onChange={(e) => setSetupSettings({...setupSettings, enableSound: e.target.checked})}
-                  />
-                  <span>Enable system sounds</span>
-                </label>
-                <label className="flex items-center gap-2 text-xs">
-                  <input 
-                    type="checkbox" 
-                    checked={setupSettings.autoUpdate}
-                    onChange={(e) => setSetupSettings({...setupSettings, autoUpdate: e.target.checked})}
-                  />
-                  <span>Enable automatic updates</span>
-                </label>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 'network' && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-sm mb-4">Network Configuration</h2>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs font-bold">Connection Type:</label>
-                  <select 
-                    value={networkSettings.connectionType}
-                    onChange={(e) => setNetworkSettings({...networkSettings, connectionType: e.target.value})}
-                    className="xp-input w-full text-xs mt-1"
-                  >
-                    <option value="ethernet">Ethernet</option>
-                    <option value="wifi">WiFi</option>
-                    <option value="dialup">Dial-up</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold">IP Address:</label>
-                  <input 
-                    type="text" 
-                    value={networkSettings.ipAddress}
-                    onChange={(e) => setNetworkSettings({...networkSettings, ipAddress: e.target.value})}
-                    className="xp-input w-full text-xs mt-1"
-                  />
-                </div>
-                <label className="flex items-center gap-2 text-xs">
-                  <input 
-                    type="checkbox" 
-                    checked={networkSettings.autoDetect}
-                    onChange={(e) => setNetworkSettings({...networkSettings, autoDetect: e.target.checked})}
-                  />
-                  <span>Automatically detect network settings</span>
-                </label>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 'progress' && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-sm mb-4">Installing Curtains XP...</h2>
-              <div className="space-y-2">
-                <div className="xp-progress">
-                  <div className="xp-progress-fill" style={{ width: `${installationProgress}%` }} />
-                </div>
-                <p className="text-xs text-center font-bold">{installationProgress}% Complete</p>
-              </div>
-              <p className="text-xs text-gray-600 text-center">
-                {installationMessage}
-              </p>
-            </div>
-          )}
-
-          {currentStep === 'completion' && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-sm mb-4">Installation Complete!</h2>
-              <div className="text-center">
-                <p className="text-lg font-bold text-green-600 mb-4">✓</p>
-                <p className="text-xs mb-4">
-                  Curtains XP has been successfully installed on your computer.
-                </p>
-                <p className="text-xs text-gray-600 mb-4">
-                  You can now use all installed components from the Start Menu.
-                </p>
-                <p className="text-xs text-gray-600">
-                  Click "Finish" to complete the setup wizard.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Button Bar */}
-        <div className="bg-[background-color:#C0C0C0] border-t-2 border-gray-400 p-3 flex justify-end gap-2">
-          {currentStep !== 'welcome' && currentStep !== 'completion' && (
-            <button
-              onClick={() => {
-                if (currentStep === 'license') setCurrentStep('welcome');
-                else if (currentStep === 'destination') setCurrentStep('license');
-                else if (currentStep === 'components') setCurrentStep('destination');
-                else if (currentStep === 'settings') setCurrentStep('components');
-                else if (currentStep === 'network') setCurrentStep('settings');
-              }}
-              className="xp-button text-xs px-6"
-            >
-              &lt; Back
-            </button>
-          )}
-
-          {currentStep === 'welcome' && (
-            <button
-              onClick={() => setCurrentStep('license')}
-              className="xp-button text-xs px-6"
-            >
-              Next &gt;
-            </button>
-          )}
-
-          {currentStep === 'license' && (
-            <button
-              onClick={handleLicenseAccept}
-              disabled={!licenseAccepted}
-              className="xp-button text-xs px-6 disabled:opacity-50"
-            >
-              Next &gt;
-            </button>
-          )}
-
-          {currentStep === 'destination' && (
-            <button
-              onClick={handleDestinationNext}
-              className="xp-button text-xs px-6"
-            >
-              Next &gt;
-            </button>
-          )}
-
-          {currentStep === 'components' && (
-            <button
-              onClick={handleComponentsNext}
-              className="xp-button text-xs px-6"
-            >
-              Next &gt;
-            </button>
-          )}
-
-          {currentStep === 'settings' && (
-            <button
-              onClick={handleSettingsNext}
-              className="xp-button text-xs px-6"
-            >
-              Next &gt;
-            </button>
-          )}
-
-          {currentStep === 'network' && (
-            <button
-              onClick={handleNetworkNext}
-              className="xp-button text-xs px-6"
-            >
-              Install
-            </button>
-          )}
-
-          {currentStep === 'completion' && (
-            <button
-              onClick={handleFinish}
-              className="xp-button text-xs px-6"
-            >
-              Finish
-            </button>
-          )}
-
-          {currentStep !== 'progress' && currentStep !== 'completion' && (
-            <button
-              className="xp-button text-xs px-6"
-            >
-              Cancel
-            </button>
-          )}
+  // Reusable Top Header Bar
+  const renderHeader = () => (
+    <div
+      className="w-full h-14 px-6 flex items-center justify-between flex-shrink-0 select-none z-10"
+      style={{
+        background: 'linear-gradient(to bottom, #001B64 0%, #06287E 100%)',
+        borderBottom: '1px solid #041B54',
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <IconXPLogo size={22} />
+        <div className="flex items-baseline leading-none">
+          <span
+            className="text-white text-[20px] font-bold tracking-tight"
+            style={{
+              fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+              textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+            }}
+          >
+            Curtains
+          </span>
+          <span
+            className="text-[#FF5218] text-[13px] font-black italic tracking-normal ml-0.5 -mt-0.5"
+            style={{
+              fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+              textShadow: '0 1px 3px rgba(255, 82, 24, 0.4)',
+            }}
+          >
+            xp
+          </span>
         </div>
       </div>
+    </div>
+  );
+
+  // Reusable Bottom Footer Bar
+  const renderFooter = (content: React.ReactNode) => (
+    <div className="w-full flex-shrink-0 flex flex-col select-none z-10">
+      <div
+        className="w-full h-[2px]"
+        style={{
+          background:
+            'linear-gradient(to right, #001B64 0%, #D97706 20%, #F59E0B 50%, #D97706 80%, #001B64 100%)',
+          boxShadow: '0 0 4px rgba(245, 158, 11, 0.5)',
+        }}
+      />
+      <div
+        className="w-full h-14 flex items-center justify-between px-8"
+        style={{
+          background: 'linear-gradient(to bottom, #071F5E 0%, #00103A 100%)',
+        }}
+      >
+        {content}
+      </div>
+    </div>
+  );
+
+  // =========================================================================
+  // STAGE 1: AUTORUN / SETUP MENU ("What do you want to do?") - Image 3
+  // =========================================================================
+  if (stage === 'menu') {
+    return (
+      <div
+        className="fixed inset-0 flex flex-col justify-between select-none overflow-hidden font-sans"
+        style={{
+          background: 'radial-gradient(circle at 18% 25%, #3B72DE 0%, #154CB8 35%, #072E8A 70%, #001B64 100%)',
+          fontFamily: '"Tahoma", "Segoe UI", "Arial", sans-serif',
+        }}
+      >
+        {renderHeader()}
+
+        {/* Center Content */}
+        <div className="flex-1 flex flex-col items-center justify-center px-8 relative">
+          <div className="flex flex-col items-start max-w-xl w-full">
+            {/* Title Header */}
+            <div className="flex items-center gap-3 mb-8">
+              <IconXPLogo size={36} />
+              <h1
+                className="text-white text-3xl font-bold italic tracking-wide"
+                style={{
+                  fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+                  textShadow: '0 2px 6px rgba(0,0,0,0.8)',
+                }}
+              >
+                Welcome to Curtains XP
+              </h1>
+            </div>
+
+            {/* Sub-header with CD / Installer Box */}
+            <div className="flex items-center gap-4 mb-6">
+              {/* CD / Installer Graphic */}
+              <div className="w-14 h-14 flex items-center justify-center flex-shrink-0 drop-shadow-lg">
+                <svg viewBox="0 0 48 48" className="w-full h-full" fill="none">
+                  <rect x="4" y="6" width="30" height="36" rx="2" fill="#E2E8F0" stroke="#334155" strokeWidth="1" />
+                  <rect x="4" y="6" width="30" height="8" fill="#3B82F6" />
+                  <circle cx="30" cy="28" r="14" fill="#FFFFFF" stroke="#0284C7" strokeWidth="1.2" />
+                  <circle cx="30" cy="28" r="5" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1" />
+                  <circle cx="30" cy="28" r="2" fill="#0F172A" />
+                </svg>
+              </div>
+              <h2
+                className="text-white text-2xl font-bold tracking-wide"
+                style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}
+              >
+                What do you want to do?
+              </h2>
+            </div>
+
+            {/* Menu Option Buttons */}
+            <div className="flex flex-col gap-3.5 w-full pl-6">
+              <button
+                onClick={handleStartInstallation}
+                className="flex items-center gap-3 text-left text-white hover:text-yellow-200 transition-colors group cursor-pointer"
+              >
+                <span className="w-6 h-6 rounded-[3px] bg-[#388E3C] border border-[#1B5E20] text-white flex items-center justify-center font-bold text-xs shadow group-hover:bg-[#43A047] group-hover:scale-105 transition-transform">
+                  ➔
+                </span>
+                <span
+                  className="text-[16px] font-bold tracking-wide underline-offset-2 group-hover:underline"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                >
+                  <span className="underline">I</span>nstall Curtains XP
+                </span>
+              </button>
+
+              <button
+                onClick={() => setStage('components-dialog')}
+                className="flex items-center gap-3 text-left text-white hover:text-yellow-200 transition-colors group cursor-pointer"
+              >
+                <span className="w-6 h-6 rounded-[3px] bg-[#1E6FE8] border border-[#0B4BB8] text-white flex items-center justify-center font-bold text-xs shadow group-hover:bg-[#3B82F6] group-hover:scale-105 transition-transform">
+                  ➔
+                </span>
+                <span
+                  className="text-[16px] font-bold tracking-wide underline-offset-2 group-hover:underline"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                >
+                  Install <span className="underline">o</span>ptional Curtains components
+                </span>
+              </button>
+
+              <button
+                onClick={() => alert('Curtains XP Features:\n- Full Retro XP Desktop Simulator\n- File Explorer, Notepad, Paint, Media Player\n- Classic Themes & Sound Effects\n- Pure Web Architecture')}
+                className="flex items-center gap-3 text-left text-white hover:text-yellow-200 transition-colors group cursor-pointer"
+              >
+                <span className="w-6 h-6 rounded-[3px] bg-[#1E6FE8] border border-[#0B4BB8] text-white flex items-center justify-center font-bold text-xs shadow group-hover:bg-[#3B82F6] group-hover:scale-105 transition-transform">
+                  ➔
+                </span>
+                <span
+                  className="text-[16px] font-bold tracking-wide underline-offset-2 group-hover:underline"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                >
+                  <span className="underline">P</span>erform additional tasks
+                </span>
+              </button>
+
+              <button
+                onClick={() => setStage('compatibility-dialog')}
+                className="flex items-center gap-3 text-left text-white hover:text-yellow-200 transition-colors group cursor-pointer"
+              >
+                <span className="w-6 h-6 rounded-[3px] bg-[#1E6FE8] border border-[#0B4BB8] text-white flex items-center justify-center font-bold text-xs shadow group-hover:bg-[#3B82F6] group-hover:scale-105 transition-transform">
+                  ➔
+                </span>
+                <span
+                  className="text-[16px] font-bold tracking-wide underline-offset-2 group-hover:underline"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                >
+                  <span className="underline">C</span>heck system compatibility
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer with Exit button */}
+        {renderFooter(
+          <button
+            onClick={() => handleStartInstallation()}
+            className="flex items-center gap-2 text-white hover:text-red-200 transition-colors cursor-pointer group"
+          >
+            <div className="w-6 h-6 rounded-[2px] bg-gradient-to-b from-[#EF4444] to-[#B91C1C] border border-[#7F1D1D] text-white flex items-center justify-center font-bold text-xs shadow group-hover:scale-105 transition-transform">
+              ✕
+            </div>
+            <span
+              className="text-[14px] font-bold tracking-wide text-white group-hover:underline"
+              style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+            >
+              Exit
+            </span>
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // Optional Components Selector Dialog
+  if (stage === 'components-dialog') {
+    return (
+      <div
+        className="fixed inset-0 flex flex-col justify-between select-none overflow-hidden font-sans"
+        style={{
+          background: 'radial-gradient(circle at 18% 25%, #3B72DE 0%, #154CB8 35%, #072E8A 70%, #001B64 100%)',
+          fontFamily: '"Tahoma", "Segoe UI", "Arial", sans-serif',
+        }}
+      >
+        {renderHeader()}
+
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-white/95 rounded-[4px] p-6 max-w-lg w-full shadow-2xl border-2 border-white/50 text-[#1F2937]">
+            <h2 className="text-xl font-bold text-[#0F172A] mb-2">Optional Curtains Components</h2>
+            <p className="text-xs text-gray-600 mb-4">
+              Select the applications and utilities you wish to include in your Curtains XP installation:
+            </p>
+
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-2 mb-6">
+              {[
+                { key: 'fileExplorer', label: 'File Explorer', desc: 'Browse folders, files, and drives' },
+                { key: 'notepad', label: 'Notepad', desc: 'Lightweight text editing application' },
+                { key: 'calculator', label: 'Calculator', desc: 'Standard & scientific math tool' },
+                { key: 'terminal', label: 'Command Prompt', desc: 'Command-line system shell' },
+                { key: 'games', label: 'Classic Games', desc: 'Minesweeper, Solitaire, Snake' },
+                { key: 'browser', label: 'Internet Browser', desc: 'Retro web surfing browser' },
+                { key: 'weatherWidget', label: 'Weather Utility', desc: 'Live weather forecasts' },
+                { key: 'newsReader', label: 'News Feed Reader', desc: 'Headlines and RSS news feeds' },
+              ].map(({ key, label, desc }) => (
+                <label
+                  key={key}
+                  className="flex items-start gap-2.5 p-2 rounded hover:bg-blue-50 border border-transparent hover:border-blue-200 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedComponents[key as keyof SelectedComponents]}
+                    onChange={() => handleComponentToggle(key as keyof SelectedComponents)}
+                    className="mt-0.5 cursor-pointer accent-[#1E6FE8]"
+                  />
+                  <div>
+                    <div className="text-xs font-bold text-gray-900">{label}</div>
+                    <div className="text-[11px] text-gray-500">{desc}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setStage('menu')}
+                className="px-5 py-1.5 rounded-[3px] bg-[#1E6FE8] hover:bg-[#1558C0] active:bg-[#0E3D94] text-white font-bold text-xs shadow border border-[#0B4BB8] cursor-pointer"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {renderFooter(
+          <button
+            onClick={() => setStage('menu')}
+            className="text-white text-xs font-bold hover:underline cursor-pointer"
+          >
+            &lt; Back to Menu
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // System Compatibility Dialog
+  if (stage === 'compatibility-dialog') {
+    return (
+      <div
+        className="fixed inset-0 flex flex-col justify-between select-none overflow-hidden font-sans"
+        style={{
+          background: 'radial-gradient(circle at 18% 25%, #3B72DE 0%, #154CB8 35%, #072E8A 70%, #001B64 100%)',
+          fontFamily: '"Tahoma", "Segoe UI", "Arial", sans-serif',
+        }}
+      >
+        {renderHeader()}
+
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-white/95 rounded-[4px] p-6 max-w-md w-full shadow-2xl border-2 border-white/50 text-[#1F2937]">
+            <h2 className="text-xl font-bold text-[#0F172A] mb-3">System Compatibility Check</h2>
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3 p-2 bg-green-50 border border-green-200 rounded">
+                <span className="text-green-600 font-bold text-lg">✓</span>
+                <div className="text-xs">
+                  <div className="font-bold text-gray-800">Processor &amp; Memory</div>
+                  <div className="text-gray-500">Fully compatible with Curtains XP engine</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-2 bg-green-50 border border-green-200 rounded">
+                <span className="text-green-600 font-bold text-lg">✓</span>
+                <div className="text-xs">
+                  <div className="font-bold text-gray-800">Display Adapter</div>
+                  <div className="text-gray-500">Hardware accelerated graphics supported</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-2 bg-green-50 border border-green-200 rounded">
+                <span className="text-green-600 font-bold text-lg">✓</span>
+                <div className="text-xs">
+                  <div className="font-bold text-gray-800">Sound &amp; Audio</div>
+                  <div className="text-gray-500">Retro synthesized sound card detected</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setStage('menu')}
+                className="px-5 py-1.5 rounded-[3px] bg-[#1E6FE8] hover:bg-[#1558C0] text-white font-bold text-xs shadow cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {renderFooter(
+          <button
+            onClick={() => setStage('menu')}
+            className="text-white text-xs font-bold hover:underline cursor-pointer"
+          >
+            &lt; Back to Menu
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // STAGE 2: THE ICONIC 5-STEP INSTALLING SETUP SCREEN - Image 2
+  // =========================================================================
+  if (stage === 'installing') {
+    const steps = [
+      { id: 1, label: 'Collecting information' },
+      { id: 2, label: 'Dynamic Update' },
+      { id: 3, label: 'Preparing installation' },
+      { id: 4, label: 'Installing Curtains' },
+      { id: 5, label: 'Finalizing installation' },
+    ];
+
+    return (
+      <div
+        className="fixed inset-0 flex flex-col justify-between select-none overflow-hidden font-sans"
+        style={{
+          background: 'linear-gradient(to bottom, #4A7FD9 0%, #295EC2 40%, #1748A8 100%)',
+          fontFamily: '"Tahoma", "Segoe UI", "Arial", sans-serif',
+        }}
+      >
+        {renderHeader()}
+
+        {/* Center Main Stage */}
+        <div className="flex-1 flex max-w-6xl mx-auto w-full px-10 py-6 gap-12 items-center">
+          {/* Left Column: 5 Stages + Time Countdown + Segmented Progress Bar */}
+          <div className="w-[320px] flex flex-col justify-between h-[380px] flex-shrink-0">
+            {/* Steps List */}
+            <div className="space-y-4">
+              {steps.map((s) => {
+                const isCompleted = s.id < installStepIndex;
+                const isActive = s.id === installStepIndex;
+
+                return (
+                  <div key={s.id} className="flex items-center gap-3">
+                    {/* Status Circle Bullet */}
+                    {isCompleted ? (
+                      <div className="w-5 h-5 rounded-full bg-[#388E3C] border-2 border-white flex items-center justify-center shadow-md">
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      </div>
+                    ) : isActive ? (
+                      <div className="w-5 h-5 rounded-full bg-[#E65100] border-2 border-white flex items-center justify-center shadow-md animate-pulse">
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      </div>
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-white/20 border-2 border-white/60 flex items-center justify-center shadow-sm" />
+                    )}
+
+                    {/* Step Label */}
+                    <span
+                      className={`text-[14px] font-bold ${
+                        isActive
+                          ? 'text-[#FFA726] drop-shadow'
+                          : isCompleted
+                          ? 'text-white drop-shadow'
+                          : 'text-white/60'
+                      }`}
+                      style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                    >
+                      {s.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Estimated Time Remaining */}
+            <div className="text-white text-[13px] leading-snug drop-shadow" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+              <div>Setup will complete in</div>
+              <div>approximately:</div>
+              <div className="font-bold text-[15px] mt-0.5">{minutesRemaining} minutes</div>
+            </div>
+
+            {/* Bottom-Left Progress Bar */}
+            <div className="flex flex-col gap-1.5 w-full">
+              <span
+                className="text-white text-[12px] font-medium drop-shadow"
+                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+              >
+                {installStatusText}
+              </span>
+
+              {/* Windows XP Green Segmented Progress Bar Track */}
+              <div className="w-full h-4 bg-[#E0E0E0] border border-[#808080] p-[2px] rounded-[1px] shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-b from-[#76D22A] via-[#43A047] to-[#2E7D32] transition-all duration-200"
+                  style={{
+                    width: `${installProgress}%`,
+                    backgroundImage:
+                      'repeating-linear-gradient(90deg, #43A047 0px, #43A047 8px, #388E3C 8px, #388E3C 10px)',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Rotating Feature Showcase Slide */}
+          <div className="flex-1 flex flex-col justify-center pr-6">
+            <h2
+              className="text-white text-[32px] font-bold leading-tight mb-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+              style={{
+                fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+              }}
+            >
+              {showcaseSlides[activeSlide].title}
+            </h2>
+
+            <p
+              className="text-white text-[17px] leading-relaxed max-w-xl font-normal drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
+              style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+            >
+              {showcaseSlides[activeSlide].body}
+            </p>
+          </div>
+        </div>
+
+        {/* Footer with 4 Activity Blinking Green Dots */}
+        {renderFooter(
+          <div className="w-full flex items-center justify-between">
+            <span
+              className="text-white text-xs opacity-75 drop-shadow"
+              style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+            >
+              Curtains XP Setup
+            </span>
+
+            {/* Blinking Activity Indicator */}
+            <div className="flex items-center gap-1.5">
+              {[0, 1, 2, 3].map((idx) => (
+                <div
+                  key={idx}
+                  className={`w-2 h-2 rounded-[1px] transition-opacity duration-200 ${
+                    blinkDot === idx
+                      ? 'bg-[#76D22A] shadow-[0_0_4px_#76D22A] opacity-100'
+                      : 'bg-[#2E7D32] opacity-40'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // STAGE 3: OUT-OF-BOX EXPERIENCE (OOBE) "Welcome to Curtains" - Image 1
+  // =========================================================================
+  if (stage === 'welcome-oobe') {
+    return (
+      <div
+        className="fixed inset-0 flex flex-col justify-between select-none overflow-hidden font-sans"
+        style={{
+          background: 'radial-gradient(circle at 18% 25%, #3B72DE 0%, #154CB8 35%, #072E8A 70%, #001B64 100%)',
+          fontFamily: '"Tahoma", "Segoe UI", "Arial", sans-serif',
+        }}
+      >
+        {renderHeader()}
+
+        {/* Center OOBE Welcome Area */}
+        <div className="flex-1 flex items-center justify-between max-w-5xl mx-auto w-full px-12 py-8 relative">
+          <div className="flex flex-col items-start max-w-xl">
+            <h1
+              className="text-white text-[38px] font-bold mb-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+              style={{
+                fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+              }}
+            >
+              Welcome to Curtains
+            </h1>
+
+            <p
+              className="text-white text-[16px] leading-relaxed mb-4 drop-shadow"
+              style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+            >
+              Thank you for purchasing Curtains XP.
+            </p>
+
+            <p
+              className="text-white text-[16px] leading-relaxed mb-12 drop-shadow"
+              style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+            >
+              Let's spend a few minutes setting up your computer.
+            </p>
+
+            <p
+              className="text-white text-[14px] font-normal opacity-90 drop-shadow mt-8"
+              style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+            >
+              To continue, click Next.
+            </p>
+          </div>
+
+          {/* Big 3D Help Sphere Graphic */}
+          <div className="w-36 h-36 flex items-center justify-center flex-shrink-0 drop-shadow-2xl">
+            <IconHelp size={120} />
+          </div>
+        </div>
+
+        {/* Footer with Green "Next ➔" Button */}
+        {renderFooter(
+          <div className="w-full flex items-center justify-end">
+            <button
+              onClick={() => setStage('user-setup')}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-[3px] bg-[#388E3C] hover:bg-[#2E7D32] active:bg-[#1B5E20] text-white font-bold text-xs shadow border border-[#144F18] cursor-pointer group"
+            >
+              <span className="text-[13px]">Next</span>
+              <span className="text-sm group-hover:translate-x-0.5 transition-transform">➔</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // STAGE 4: USER SETUP ("Who will use this computer?")
+  // =========================================================================
+  if (stage === 'user-setup') {
+    return (
+      <div
+        className="fixed inset-0 flex flex-col justify-between select-none overflow-hidden font-sans"
+        style={{
+          background: 'radial-gradient(circle at 18% 25%, #3B72DE 0%, #154CB8 35%, #072E8A 70%, #001B64 100%)',
+          fontFamily: '"Tahoma", "Segoe UI", "Arial", sans-serif',
+        }}
+      >
+        {renderHeader()}
+
+        <div className="flex-1 flex items-center justify-between max-w-5xl mx-auto w-full px-12 py-8 relative">
+          <div className="flex flex-col items-start max-w-xl">
+            <h1
+              className="text-white text-[32px] font-bold mb-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+              style={{
+                fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+                textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+              }}
+            >
+              Who will use this computer?
+            </h1>
+
+            <p
+              className="text-white text-[15px] leading-relaxed mb-6 drop-shadow"
+              style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+            >
+              Type the name of each person who will use this computer. Curtains XP uses the name to create a user account for each person.
+            </p>
+
+            {/* Username input box */}
+            <div className="flex flex-col gap-3 w-full max-w-sm mb-6">
+              <div className="flex items-center gap-3">
+                <span
+                  className="text-white text-[14px] font-bold w-28 drop-shadow"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                >
+                  Your name:
+                </span>
+                <input
+                  type="text"
+                  value={inputUsername}
+                  onChange={(e) => setInputUsername(e.target.value)}
+                  placeholder="Administrator"
+                  autoFocus
+                  className="flex-1 px-3 py-1 text-sm bg-white text-black rounded-[2px] border border-gray-400 focus:outline-none focus:border-blue-500 shadow-inner"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span
+                  className="text-white text-[14px] font-bold w-28 drop-shadow"
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                >
+                  Password:
+                </span>
+                <input
+                  type="password"
+                  value={inputPassword}
+                  onChange={(e) => setInputPassword(e.target.value)}
+                  placeholder="(Optional)"
+                  className="flex-1 px-3 py-1 text-sm bg-white text-black rounded-[2px] border border-gray-400 focus:outline-none focus:border-blue-500 shadow-inner"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="w-36 h-36 flex items-center justify-center flex-shrink-0 drop-shadow-2xl">
+            <IconHelp size={120} />
+          </div>
+        </div>
+
+        {renderFooter(
+          <div className="w-full flex items-center justify-between">
+            <button
+              onClick={() => setStage('welcome-oobe')}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-[3px] bg-white/10 hover:bg-white/20 text-white font-bold text-xs shadow border border-white/20 cursor-pointer"
+            >
+              <span>◀</span>
+              <span>Back</span>
+            </button>
+
+            <button
+              onClick={() => setStage('oobe-complete')}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-[3px] bg-[#388E3C] hover:bg-[#2E7D32] active:bg-[#1B5E20] text-white font-bold text-xs shadow border border-[#144F18] cursor-pointer group"
+            >
+              <span className="text-[13px]">Next</span>
+              <span className="text-sm group-hover:translate-x-0.5 transition-transform">➔</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // STAGE 5: OOBE COMPLETE ("Thank you!")
+  // =========================================================================
+  return (
+    <div
+      className="fixed inset-0 flex flex-col justify-between select-none overflow-hidden font-sans"
+      style={{
+        background: 'radial-gradient(circle at 18% 25%, #3B72DE 0%, #154CB8 35%, #072E8A 70%, #001B64 100%)',
+        fontFamily: '"Tahoma", "Segoe UI", "Arial", sans-serif',
+      }}
+    >
+      {renderHeader()}
+
+      <div className="flex-1 flex items-center justify-between max-w-5xl mx-auto w-full px-12 py-8 relative">
+        <div className="flex flex-col items-start max-w-xl">
+          <h1
+            className="text-white text-[38px] font-bold mb-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+            style={{
+              fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+              textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+            }}
+          >
+            Thank you!
+          </h1>
+
+          <p
+            className="text-white text-[16px] leading-relaxed mb-4 drop-shadow"
+            style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+          >
+            Congratulations, you are ready to use Curtains XP!
+          </p>
+
+          <p
+            className="text-white text-[16px] leading-relaxed mb-8 drop-shadow"
+            style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+          >
+            Click Finish to log in and start exploring your new operating system.
+          </p>
+        </div>
+
+        <div className="w-36 h-36 flex items-center justify-center flex-shrink-0 drop-shadow-2xl">
+          <IconHelp size={120} />
+        </div>
+      </div>
+
+      {renderFooter(
+        <div className="w-full flex items-center justify-end">
+          <button
+            onClick={handleFinishOOBE}
+            className="flex items-center gap-2 px-5 py-1.5 rounded-[3px] bg-[#388E3C] hover:bg-[#2E7D32] active:bg-[#1B5E20] text-white font-bold text-xs shadow border border-[#144F18] cursor-pointer group"
+          >
+            <span className="text-[13px]">Finish</span>
+            <span className="text-sm group-hover:translate-x-0.5 transition-transform">➔</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

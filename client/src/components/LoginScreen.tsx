@@ -155,34 +155,26 @@ export const LoginScreen: React.FC = () => {
               </svg>
             </div>
 
-            {/* Microsoft Curtains xp Wordmark */}
-            <div className="flex flex-col items-start select-none">
+            {/* Curtains xp Wordmark */}
+            <div className="flex items-start leading-none select-none">
               <span
-                className="text-[#FFFFFF] text-[13px] font-normal tracking-[0.02em] leading-none mb-0.5 pl-0.5 opacity-90"
-                style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)' }}
+                className="text-[#FFFFFF] text-[42px] font-bold tracking-tight leading-none"
+                style={{
+                  fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
+                }}
               >
-                Microsoft
+                Curtains
               </span>
-              <div className="flex items-start leading-none">
-                <span
-                  className="text-[#FFFFFF] text-[40px] font-bold tracking-tight leading-none"
-                  style={{
-                    fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
-                    textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
-                  }}
-                >
-                  Curtains
-                </span>
-                <span
-                  className="text-[#FF5218] text-[20px] font-black italic tracking-normal ml-1 -mt-1 select-none"
-                  style={{
-                    fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
-                    textShadow: '0 1px 3px rgba(255, 82, 24, 0.4)',
-                  }}
-                >
-                  xp
-                </span>
-              </div>
+              <span
+                className="text-[#FF5218] text-[22px] font-black italic tracking-normal ml-1 -mt-1 select-none"
+                style={{
+                  fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
+                  textShadow: '0 1px 3px rgba(255, 82, 24, 0.4)',
+                }}
+              >
+                xp
+              </span>
             </div>
 
             {/* Instruction Subtitle */}

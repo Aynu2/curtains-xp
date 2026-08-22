@@ -148,7 +148,7 @@ export const BootScreen: React.FC = () => {
             </svg>
           </div>
 
-          {/* Typography: Microsoft Windows xp */}
+          {/* Typography: Microsoft Curtains xp */}
           <div className="flex flex-col items-start select-none">
             <span
               className="text-[#FFFFFF] text-[15px] font-medium tracking-[0.04em] leading-none mb-1 pl-1"
@@ -167,7 +167,7 @@ export const BootScreen: React.FC = () => {
                   textShadow: '0 2px 6px rgba(0, 0, 0, 0.9)',
                 }}
               >
-                Windows
+                Curtains
               </span>
               <span
                 className="text-[#FF5218] text-[24px] font-black italic tracking-normal ml-1 -mt-1 select-none"

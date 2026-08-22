@@ -140,10 +140,10 @@ export const InstallationWizard: React.FC<InstallationWizardProps> = ({ onInstal
   const handleFinishOOBE = () => {
     const user = inputUsername.trim() || 'Administrator';
     setUsername(user);
-    if (inputPassword) setUserPassword(inputPassword);
+    setUserPassword(inputPassword);
 
     localStorage.setItem('curtains-xp-username', user);
-    if (inputPassword) localStorage.setItem('curtains-xp-password', inputPassword);
+    localStorage.setItem('curtains-xp-password', inputPassword);
     localStorage.setItem('curtains-xp-setup-complete', 'true');
     localStorage.setItem('curtains-xp-installed', 'true');
 

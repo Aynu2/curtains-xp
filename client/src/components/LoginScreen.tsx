@@ -8,7 +8,8 @@ export const LoginScreen: React.FC = () => {
   const { playSound } = useSoundEffect();
 
   const savedUser = localStorage.getItem('curtains-xp-username') || contextUsername || 'Administrator';
-  const savedPass = localStorage.getItem('curtains-xp-password') || contextPassword || '';
+  const storedPass = localStorage.getItem('curtains-xp-password');
+  const savedPass = storedPass !== null ? storedPass : (contextPassword || '');
 
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -27,7 +28,7 @@ export const LoginScreen: React.FC = () => {
 
     setIsLoggingIn(true);
     setUsername(savedUser);
-    if (password) setUserPassword(password);
+    setUserPassword(savedPass);
     localStorage.setItem('curtains-xp-installed', 'true');
 
     try {
@@ -47,7 +48,7 @@ export const LoginScreen: React.FC = () => {
     const div = document.createElement('div');
     div.style.cssText =
       'position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:16px;font-family:Tahoma,sans-serif;';
-    div.innerHTML = `<div style="color:white;font-size:22px;font-weight:bold;">Windows is shutting down...</div><div style="color:#aaa;font-size:13px;">Please wait</div>`;
+    div.innerHTML = `<div style="color:white;font-size:22px;font-weight:bold;">Curtains is shutting down...</div><div style="color:#aaa;font-size:13px;">Please wait</div>`;
     document.body.appendChild(div);
     setTimeout(() => {
       setScreen('boot');

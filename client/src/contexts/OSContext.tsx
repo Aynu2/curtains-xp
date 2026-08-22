@@ -82,7 +82,8 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     return localStorage.getItem('curtains-xp-username') || 'CurtainsUser';
   });
   const [userPassword, setUserPassword] = useState(() => {
-    return localStorage.getItem('curtains-xp-password') || 'password';
+    const saved = localStorage.getItem('curtains-xp-password');
+    return saved !== null ? saved : '';
   });
   const [bootProgress, setBootProgress] = useState(0);
   const [nextZIndex, setNextZIndex] = useState(100);

@@ -57,7 +57,7 @@ export const Desktop: React.FC = () => {
   const handleRestart = () => {
     const shutdownDiv = document.createElement('div');
     shutdownDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;display:flex;align-items:center;justify-content:center;z-index:9999;';
-    shutdownDiv.innerHTML = '<div style="color:white;font-size:24px;text-align:center;"><p>Shutting down...</p><p style="font-size:14px;margin-top:20px;">Please wait...</p></div>';
+    shutdownDiv.innerHTML = '<div style="color:white;font-size:24px;text-align:center;"><p>Curtains is shutting down...</p><p style="font-size:14px;margin-top:20px;">Please wait...</p></div>';
     document.body.appendChild(shutdownDiv);
     setTimeout(() => {
       setScreen('boot');

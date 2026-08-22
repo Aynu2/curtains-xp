@@ -28,9 +28,9 @@ export const CreateUserScreen: React.FC = () => {
     }
 
     setUsername(username.trim());
-    if (password) setUserPassword(password);
+    setUserPassword(password);
     localStorage.setItem('curtains-xp-username', username.trim());
-    if (password) localStorage.setItem('curtains-xp-password', password);
+    localStorage.setItem('curtains-xp-password', password);
     localStorage.setItem('curtains-xp-setup-complete', 'true');
     localStorage.setItem('curtains-xp-installed', 'true');
     setScreen('login');

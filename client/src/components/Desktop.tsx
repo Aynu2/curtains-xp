@@ -29,6 +29,15 @@ import { getFileTypeInfo } from '@/lib/fileTypes';
 import { Menu, Settings, Folder, Calculator as CalcIcon, Terminal as TerminalIcon, FileText, Gamepad2, Globe, Info, ShoppingBag, Palette, Music, Image, Code, Grid3x3, BookOpen, Mail, Copy, Scissors, Clipboard, Trash2 } from 'lucide-react';
 import { ContextMenu, ContextMenuItem, useContextMenu } from './ContextMenu';
 import { deleteItem } from '@/lib/filesystem';
+import {
+  IconMyComputer,
+  IconNetworkPlaces,
+  IconRecycleBin,
+  IconMyDocuments,
+  IconInternet,
+  IconControlPanel,
+  renderXPIcon,
+} from './XPIcons';
 
 export const Desktop: React.FC = () => {
   const { windows, openWindow, username, setScreen, installedComponents, clipboard, setClipboard, theme } = useOS();
@@ -89,8 +98,12 @@ export const Desktop: React.FC = () => {
   }, [openWindow]);
 
   const desktopApps = [
-    { id: 'my-computer', label: 'My Computer', icon: '💻' },
-    { id: 'recycle', label: 'Recycle Bin', icon: '🗑️' },
+    { id: 'documents', label: 'My Documents', icon: <IconMyDocuments size={36} /> },
+    { id: 'my-computer', label: 'My Computer', icon: <IconMyComputer size={36} /> },
+    { id: 'network-places', label: 'My Network Places', icon: <IconNetworkPlaces size={36} /> },
+    { id: 'recycle', label: 'Recycle Bin', icon: <IconRecycleBin size={36} /> },
+    { id: 'browser', label: 'Internet Explorer', icon: <IconInternet size={36} /> },
+    { id: 'settings', label: 'Control Panel', icon: <IconControlPanel size={36} /> },
   ];
 
   const handleDesktopIconClick = (appId: string) => {
@@ -111,6 +124,12 @@ export const Desktop: React.FC = () => {
         break;
       case 'documents':
         openWindow('file-explorer', 'My Documents');
+        break;
+      case 'network-places':
+        openWindow('file-explorer', 'My Network Places');
+        break;
+      case 'recycle':
+        openWindow('file-explorer', 'Recycle Bin');
         break;
       case 'file-explorer':
         openWindow('file-explorer', 'File Explorer');
@@ -329,7 +348,7 @@ export const Desktop: React.FC = () => {
               className="xp-desktop-icon group hover:animate-desktop-icon-hover active:animate-button-press"
               title={file.name}
             >
-              <div className="text-4xl">{fileTypeInfo.icon}</div>
+              <div className="flex items-center justify-center">{renderXPIcon(fileTypeInfo.app, 36)}</div>
               <div className="xp-desktop-icon-label text-xs">{file.name.substring(0, 12)}</div>
             </button>
           );

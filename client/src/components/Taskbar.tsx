@@ -4,6 +4,7 @@ import { Volume2, VolumeX, Clock, Power } from 'lucide-react';
 import { getTheme } from '@/lib/themes';
 import { useSoundEffect } from '@/hooks/useSoundEffect';
 import { StartMenu } from './StartMenu';
+import { IconXPLogo, renderXPIcon } from './XPIcons';
 
 interface TaskbarProps {
   onLogout: () => void;
@@ -70,28 +71,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({ onLogout, onShutdown, onRestar
   };
 
   const getWindowIcon = (app: string) => {
-    const icons: { [key: string]: string } = {
-      'file-explorer': '📁',
-      'calculator': '🧮',
-      'terminal': '⌨️',
-      'notepad': '📝',
-      'settings': '⚙️',
-      'games': '🎮',
-      'browser': '🌐',
-      'app-store': '🛍️',
-      'system-info': 'ℹ️',
-      'paint-pro': '🎨',
-      'media-player': '🎬',
-      'photo-gallery': '📸',
-      'code-editor': '💻',
-      'spreadsheet-pro': '📊',
-      'document-editor': '📃',
-      'email-client': '📧',
-      'download-manager': '📥',
-      'file-search': '🔎',
-      'backup-restore': '💾',
-    };
-    return icons[app] || '📦';
+    return renderXPIcon(app, 16);
   };
 
   const handleTaskbarButtonClick = (windowId: string) => {
@@ -119,7 +99,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({ onLogout, onShutdown, onRestar
       {/* Taskbar */}
       <div
         ref={taskbarRef}
-        className="fixed bottom-0 left-0 right-0 flex items-center justify-between px-2"
+        className="fixed bottom-0 left-0 right-0 flex items-center justify-between px-0 select-none"
         style={{
           height: `${taskbarHeight}px`,
           background: `linear-gradient(to bottom, ${themeColors.taskbarGradientStart}, ${themeColors.taskbarGradientEnd})`,
@@ -129,24 +109,31 @@ export const Taskbar: React.FC<TaskbarProps> = ({ onLogout, onShutdown, onRestar
           zIndex: 1000,
         }}
       >
-        {/* Start Button */}
+        {/* Authentic Windows XP Start Button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             playSound('click');
             setShowStartMenu(!showStartMenu);
           }}
-          className="xp-button px-3 py-1 font-bold text-sm flex items-center gap-2"
+          className="relative flex items-center gap-1.5 px-3 py-1 font-bold text-white shadow-md active:translate-y-[1px] transition-all cursor-pointer flex-shrink-0"
           style={{
-            background: `linear-gradient(to bottom, ${themeColors.buttonGradientStart}, ${themeColors.buttonGradientEnd})`,
-            border: `2px solid ${themeColors.buttonBorderLight}`,
-            borderRight: `2px solid ${themeColors.buttonBorderDark}`,
-            borderBottom: `2px solid ${themeColors.buttonBorderDark}`,
-            cursor: 'pointer',
-            height: `${Math.max(24, taskbarHeight - 8)}px`,
+            borderRadius: '0 8px 8px 0',
+            background: 'linear-gradient(to bottom, #388E3C 0%, #4CAF50 25%, #2E7D32 75%, #1B5E20 100%)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), inset 1px 0 0 rgba(255,255,255,0.4), 1px 1px 2px rgba(0,0,0,0.4)',
+            border: '1px solid #144F18',
+            height: `${Math.max(26, taskbarHeight - 4)}px`,
+            fontStyle: 'italic',
+            fontFamily: '"Franklin Gothic Medium", "Segoe UI", "Tahoma", sans-serif',
           }}
         >
-          🪟 Start
+          <IconXPLogo size={18} />
+          <span
+            className="text-[14px] font-bold text-white tracking-wide"
+            style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.9)' }}
+          >
+            start
+          </span>
         </button>
 
         {/* Taskbar Buttons */}
@@ -157,7 +144,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({ onLogout, onShutdown, onRestar
               onClick={() => handleTaskbarButtonClick(w.id)}
               onMouseEnter={(e) => handleTaskbarButtonHover(e, w.id)}
               onMouseLeave={() => setHoveredWindowId(null)}
-              className="xp-button px-2 py-1 text-xs flex items-center gap-1 whitespace-nowrap relative transition-all"
+              className="xp-button px-2 py-1 text-xs flex items-center gap-1.5 whitespace-nowrap relative transition-all"
               style={{
                 background: w.minimized
                   ? `linear-gradient(to bottom, ${themeColors.buttonGradientStart}, ${themeColors.buttonGradientEnd})`
@@ -168,12 +155,12 @@ export const Taskbar: React.FC<TaskbarProps> = ({ onLogout, onShutdown, onRestar
                 borderBottom: w.minimized ? `2px solid ${themeColors.buttonBorderDark}` : `2px solid ${themeColors.activeButtonBorderDark}`,
                 height: `${Math.max(24, taskbarHeight - 8)}px`,
                 minWidth: '120px',
-                maxWidth: '150px',
+                maxWidth: '160px',
                 boxShadow: !w.minimized ? 'inset 0 0 4px rgba(0, 0, 0, 0.3)' : 'none',
               }}
               title={w.title}
             >
-              <span className="text-sm">{getWindowIcon(w.app)}</span>
+              <span className="flex-shrink-0">{getWindowIcon(w.app)}</span>
               <span className="truncate flex-1">{w.title}</span>
               {!w.minimized && (
                 <span className="ml-1 w-2 h-2 rounded-full bg-white opacity-75"></span>

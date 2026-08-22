@@ -12,6 +12,8 @@ import {
   FileSystemItem,
 } from '@/lib/filesystem';
 
+import { IconFolder, IconHelpDocument, renderXPIcon } from '../XPIcons';
+
 export const FileExplorer: React.FC = () => {
   const [currentFolderId, setCurrentFolderId] = useState('root');
   const [items, setItems] = useState<FileSystemItem[]>([]);
@@ -83,124 +85,110 @@ export const FileExplorer: React.FC = () => {
     }
   };
 
-  const handleGoBack = () => {
-    const folder = getFolder(currentFolderId);
-    if (folder?.parentId) {
-      setCurrentFolderId(folder.parentId);
+  const handleGoUp = () => {
+    const current = getFolder(currentFolderId);
+    if (current && current.parentId) {
+      setCurrentFolderId(current.parentId);
     }
   };
 
-  const handleGoHome = () => {
-    setCurrentFolderId('root');
-  };
-
-  const breadcrumb = getFilePath(currentFolderId);
+  const path = getFilePath(currentFolderId);
 
   return (
-    <div className="h-full flex flex-col bg-[#DFDFDF]">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-3 flex justify-between items-center border-b-2 border-gray-400">
-        <span className="font-bold">File Explorer</span>
-      </div>
-
+    <div className="flex flex-col h-full bg-white text-xs select-none font-sans">
       {/* Toolbar */}
-      <div className="bg-[#DFDFDF] border-b-2 border-gray-400 p-2 flex gap-2 flex-wrap">
+      <div className="flex items-center gap-1 p-1 bg-[#ECE9D8] border-b border-[#D4D0C8]">
         <button
-          onClick={handleGoHome}
-          className="xp-button flex items-center gap-1 text-xs"
-          title="Home"
+          onClick={handleGoUp}
+          disabled={currentFolderId === 'root'}
+          className="xp-button px-2 py-1 flex items-center gap-1 disabled:opacity-50"
+          title="Up"
         >
           <Home size={14} />
-          Home
+          <span>Up</span>
         </button>
+        <div className="w-[1px] h-5 bg-gray-400 mx-1" />
         <button
-          onClick={handleGoBack}
-          className="xp-button flex items-center gap-1 text-xs"
-          title="Back"
-        >
-          ← Back
-        </button>
-        <div className="border-l-2 border-gray-400"></div>
-        <button
-          onClick={() => setShowNewFolder(true)}
-          className="xp-button flex items-center gap-1 text-xs"
+          onClick={() => setShowNewFolder(!showNewFolder)}
+          className="xp-button px-2 py-1 flex items-center gap-1"
           title="New Folder"
         >
           <Plus size={14} />
-          New Folder
+          <span>New Folder</span>
         </button>
-        {clipboard && (
-          <button
-            onClick={handlePaste}
-            className="xp-button flex items-center gap-1 text-xs"
-            title="Paste"
-          >
-            📋
-            Paste
-          </button>
-        )}
+        <div className="w-[1px] h-5 bg-gray-400 mx-1" />
+        <button
+          onClick={() => selectedItem && handleDeleteItem(selectedItem.id)}
+          disabled={!selectedItem}
+          className="xp-button px-2 py-1 flex items-center gap-1 disabled:opacity-50"
+          title="Delete"
+        >
+          <Trash2 size={14} />
+          <span>Delete</span>
+        </button>
       </div>
 
-      {/* Breadcrumb */}
-      <div className="bg-[#DFDFDF] border-b-2 border-gray-400 px-3 py-2 text-xs flex items-center gap-1">
-        <span className="font-bold">Path:</span>
-        {breadcrumb.map((name, idx) => (
-          <div key={idx} className="flex items-center gap-1">
-            {idx > 0 && <span className="text-gray-600">›</span>}
-            <span className="text-blue-600">{name}</span>
-          </div>
-        ))}
+      {/* Address Bar */}
+      <div className="flex items-center gap-2 px-2 py-1 bg-[#ECE9D8] border-b border-[#D4D0C8]">
+        <span className="text-gray-600 font-medium">Address:</span>
+        <div className="flex-1 bg-white border border-[#7F9DB9] px-2 py-0.5 text-xs flex items-center gap-1">
+          <IconFolder size={14} />
+          <span>{path}</span>
+        </div>
       </div>
 
-      {/* New Folder Dialog */}
+      {/* New Folder Modal/Inline */}
       {showNewFolder && (
-        <div className="bg-gray-100 border-b-2 border-gray-400 p-3 flex gap-2">
+        <div className="p-2 bg-yellow-50 border-b border-yellow-200 flex items-center gap-2">
           <input
             type="text"
             placeholder="Folder name"
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleCreateFolder()}
-            className="flex-1 px-2 py-1 border-2 border-gray-400 rounded text-xs"
+            className="px-2 py-0.5 border border-gray-400 rounded text-xs flex-1"
             autoFocus
           />
           <button
             onClick={handleCreateFolder}
-            className="xp-button text-xs px-3"
+            className="xp-button px-3 py-0.5"
           >
             Create
           </button>
           <button
-            onClick={() => {
-              setShowNewFolder(false);
-              setNewFolderName('');
-            }}
-            className="xp-button text-xs px-3"
+            onClick={() => setShowNewFolder(false)}
+            className="xp-button px-2 py-0.5"
           >
             Cancel
           </button>
         </div>
       )}
 
-      {/* File List */}
-      <div className="flex-1 overflow-y-auto bg-white">
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto p-2">
         {items.length === 0 ? (
-          <div className="p-4 text-center text-gray-500 text-xs">
+          <div className="h-full flex items-center justify-center text-gray-400">
             This folder is empty
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-100">
             {items.map((item) => (
               <div
                 key={item.id}
-                className={`flex items-center justify-between p-3 hover:bg-blue-100 cursor-pointer transition ${
-                  selectedItem?.id === item.id ? 'bg-blue-500 text-white' : ''
+                className={`flex items-center justify-between p-2 hover:bg-[#316AC5] hover:text-white cursor-pointer transition rounded-[2px] ${
+                  selectedItem?.id === item.id ? 'bg-[#316AC5] text-white' : ''
                 }`}
                 onClick={() => setSelectedItem(item)}
                 onDoubleClick={() => handleOpenFolder(item)}
               >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className="text-lg">{item.icon}</span>
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <span className="flex-shrink-0">
+                    {item.type === 'folder' ? (
+                      <IconFolder size={20} />
+                    ) : (
+                      renderXPIcon(item.name.endsWith('.txt') ? 'notepad' : 'document-editor', 20)
+                    )}
+                  </span>
                   {showRename && selectedItem?.id === item.id ? (
                     <input
                       type="text"
